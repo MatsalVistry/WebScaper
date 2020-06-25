@@ -5,6 +5,7 @@ import pandas as pd
 driver = webdriver.Chrome(executable_path=r'C:/Vatsal/Python/chromedriver.exe')
 
 prices = []
+names = []
 pages = []
 pages.append("https://www.walmart.com/search/?grid=true&query=laptops")
 finishedpages = []
@@ -21,9 +22,18 @@ while len(pages) != 0:
     soup = BeautifulSoup(content, features='html.parser')
 
     for div in soup.findAll('div', attrs={'class':'search-result-gridview-item-wrapper'}):
-        price=div.find('span', attrs={'class':'price-characteristic'})
-        if price is not None:
+        price = div.find('span', attrs={'class':'price-characteristic'})
+        nameHelper = div.find('div', attrs={'class':'search-result-product-title gridview'})
+        name = None
+        if nameHelper is not None:
+            nameHelper = nameHelper.find('a', attrs={'class':'product-title-link line-clamp line-clamp-2 truncate-title'})
+            if nameHelper is not None:
+                name = nameHelper.find('span')
+
+        if (price is not None) and (name is not None):
             prices.append(price.text)
+            names.append(name.text)
+
 
     finishedpages.append(currentLink.replace("/",""))   
     
@@ -33,5 +43,6 @@ while len(pages) != 0:
             link = "https://www.walmart.com"+page["href"]
             pages.append(link)
 
-df = pd.DataFrame({'Price':prices}) 
+print("finished")
+df = pd.DataFrame({'Name':names,'Price':prices}) 
 df.to_csv('products.csv', index=False, encoding='utf-8')
